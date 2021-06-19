@@ -4,7 +4,7 @@ generate array with random object and specified options
 
 e.g.
 ```js
-const variants = {
+const options = {
   id: [
     [ 'RANGE', [5, 1005] ],
     [ 'UNIQUE' ],
@@ -34,6 +34,6 @@ const variants = {
   ],
 };
 
-const seeder = new RandomSeeder(variants);
+const seeder = new RandomSeeder(options);
 const results = seeder.create(1000);
 ```
