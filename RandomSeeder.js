@@ -1,23 +1,23 @@
-const SEEDER_PARAMS = {
-  VALUE: {
-    ARRAY: 'ARRAY', // Use value from array
-    RANGE: 'RANGE', // Use value in range of 2 numbers
-    FIXED: 'FIXED', // Fixed value, e.g. true | 1 | "some_string"
-  },
-  CONVERT_TO: {
-    STRING: 'STRING',
-    FLOAT: 'FLOAT',
-    INT: 'INT',
-  },
-  OPTIONS: {
-    RANDOM: 'RANDOM', // Random from array (use it with ARRAY or RANGE)
-    DIGITS: 'DIGITS', // Number of digits after comma in float
-    UNIQUE: 'UNIQUE', // Unique field
-    TRANSFORMERS: 'TRANSFORMERS', // Array of funcs that modify value after generation
-  },
-};
-
 class RandomSeeder {
+  PARAMS = {
+    VALUE: {
+      ARRAY: 'ARRAY', // Use value from array
+      RANGE: 'RANGE', // Use value in range of 2 numbers
+      FIXED: 'FIXED', // Fixed value, e.g. true | 1 | "some_string"
+    },
+    CONVERT_TO: {
+      STRING: 'STRING',
+      FLOAT: 'FLOAT',
+      INT: 'INT',
+    },
+    OPTIONS: {
+      RANDOM: 'RANDOM', // Random from array (use it with ARRAY or RANGE)
+      DIGITS: 'DIGITS', // Number of digits after comma in float
+      UNIQUE: 'UNIQUE', // Unique field
+      TRANSFORMERS: 'TRANSFORMERS', // Array of funcs that modify value after generation
+    },
+  }
+
   constructor(options= {}) {
     this.options = Object.fromEntries(
       Object.keys(options).map((field) => [field, new Map(options[field])]),
@@ -46,9 +46,9 @@ class RandomSeeder {
         let seed_value = this._generateSeedValue(
           field, this.options[field], iteration, count,
         );
-        if (this.options[field].has(SEEDER_PARAMS.OPTIONS.TRANSFORMERS)) {
+        if (this.options[field].has(this.PARAMS.OPTIONS.TRANSFORMERS)) {
           seed_value = this._transformValue(
-            seed_value, this.options[field].get(SEEDER_PARAMS.OPTIONS.TRANSFORMERS),
+            seed_value, this.options[field].get(this.PARAMS.OPTIONS.TRANSFORMERS),
           );
         }
         return [field, seed_value];
@@ -60,23 +60,23 @@ class RandomSeeder {
     let value = undefined;
 
     switch (true) {
-    case options.has(SEEDER_PARAMS.VALUE.FIXED):
-      value = options.get(SEEDER_PARAMS.VALUE.FIXED);
+    case options.has(this.PARAMS.VALUE.FIXED):
+      value = options.get(this.PARAMS.VALUE.FIXED);
       break;
-    case options.has(SEEDER_PARAMS.VALUE.ARRAY):
+    case options.has(this.PARAMS.VALUE.ARRAY):
       {
-        const values = options.get(SEEDER_PARAMS.VALUE.ARRAY);
+        const values = options.get(this.PARAMS.VALUE.ARRAY);
         if (!Array.isArray(values)) break;
         let index = values.length > iteration ? iteration : iteration % values.length;
-        if (options.has(SEEDER_PARAMS.OPTIONS.RANDOM)) {
+        if (options.has(this.PARAMS.OPTIONS.RANDOM)) {
           index = Math.floor(Math.random() * values.length);
         }
         value = values[index];
       }
       break;
-    case options.has(SEEDER_PARAMS.VALUE.RANGE):
+    case options.has(this.PARAMS.VALUE.RANGE):
       {
-        const values = options.get(SEEDER_PARAMS.VALUE.RANGE);
+        const values = options.get(this.PARAMS.VALUE.RANGE);
         if (!Array.isArray(values)) break;
         if (values.length !== 2) break;
 
@@ -86,24 +86,26 @@ class RandomSeeder {
         if (typeof min !== 'number' && typeof max !== 'number') break;
         if (min > max) break;
 
-        if (options.has(SEEDER_PARAMS.OPTIONS.DIGITS)) {
-          const digits = options.get(SEEDER_PARAMS.OPTIONS.DIGITS);
+        if (options.has(this.PARAMS.OPTIONS.DIGITS)) {
+          const digits = options.get(this.PARAMS.OPTIONS.DIGITS);
           if (digits > 0) {
             min *= Math.pow(10, digits);
             max *= Math.pow(10, digits);
           }
         }
 
-        if (count > (max - min)) break;
+        if (this.options[field].has(this.PARAMS.OPTIONS.UNIQUE)) {
+          if (count > (max - min)) break;
+        }
 
-        if (options.has(SEEDER_PARAMS.OPTIONS.RANDOM)) {
+        if (options.has(this.PARAMS.OPTIONS.RANDOM)) {
           value = Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min);
         } else {
           value = min + iteration;
         }
 
-        if (options.has(SEEDER_PARAMS.OPTIONS.DIGITS)) {
-          const digits = options.get(SEEDER_PARAMS.OPTIONS.DIGITS);
+        if (options.has(this.PARAMS.OPTIONS.DIGITS)) {
+          const digits = options.get(this.PARAMS.OPTIONS.DIGITS);
           if (digits > 0) {
             value /= Math.pow(10, digits);
             value = +value.toFixed(digits);
@@ -114,13 +116,13 @@ class RandomSeeder {
     }
 
     switch (true) {
-    case options.has(SEEDER_PARAMS.CONVERT_TO.STRING):
+    case options.has(this.PARAMS.CONVERT_TO.STRING):
       value = String(value);
       break;
-    case options.has(SEEDER_PARAMS.CONVERT_TO.FLOAT):
+    case options.has(this.PARAMS.CONVERT_TO.FLOAT):
       value = parseFloat(value);
       break;
-    case options.has(SEEDER_PARAMS.CONVERT_TO.INT):
+    case options.has(this.PARAMS.CONVERT_TO.INT):
       value = parseInt(value);
       break;
     }
@@ -139,7 +141,7 @@ class RandomSeeder {
   _getUniqueFields() {
     const unique_fields = new Map();
     Object.keys(this.options).forEach((field_name) => {
-      if (this.options[field_name].has(SEEDER_PARAMS.OPTIONS.UNIQUE)) {
+      if (this.options[field_name].has(this.PARAMS.OPTIONS.UNIQUE)) {
         unique_fields.set(field_name, new Set());
       }
     });
